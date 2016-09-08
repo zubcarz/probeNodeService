@@ -17,7 +17,7 @@ router.get('/', function(req, res) {
 });
 
 
-var GpsController = require('./Controllers/gps');
+var GpsController = require('./controllers/gps');
 
 //api routes
 
