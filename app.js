@@ -1,58 +1,34 @@
+var express     =   require("express");
+var app         =   express();
+var bodyParser  =   require("body-parser");
+var winesOP     =   require("./models/wines");
+var router      =   express.Router();
 
-// var of enviroment and dependency
-var express = require("express"),  
-    app = express(),
-    http     = require("http"),
-    server   = http.createServer(app),
-    bodyParser  = require("body-parser"),
-    methodOverride = require("method-override");
-    mongoose = require('mongoose');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({"extended" : false}));
 
-
-//db connector
-var mongoose = require('mongoose');  
-mongoose.connect('mongodb://localhost/wines');  
-
-
-app.use(bodyParser.urlencoded({ extended: false }));  
-app.use(bodyParser.json());  
-app.use(methodOverride());
-
-var router = express.Router();
-
-router.get('/', function(req, res) {  
-   res.send("Hello World!");
+router.get("/",function(req,res){
+    res.json({"error" : false,"message" : "Hello World"});
 });
 
-mongoose.connect('mongodb://localhost/wines', function(err, res) {  
-  if(err) {
-    console.log('ERROR: connecting to Database. ' + err);
-  }
-  app.listen(3000, function() {
-    console.log("Node server running on http://localhost:3000");
-  });
-});
+//route() will allow you to use same path for different HTTP operation.
+//So if you have same URL but with different HTTP OP such as POST,GET etc
+//Then use route() to remove redundant code.
 
+router.route("/wines")
+    .get(function(req,res){
+        var response = {};
+        winesOP.findOne({},function(err,data){
+            if(err) {
+                response = {"error" : true,"message" : "Error fetching data"};
+            } else {
+                response = {"error" : false,"message" : data};
+            }
+            res.json(response);
+        });
+    });
 
-//var GpsController = require('./controllers/gps');
+app.use('/',router);
 
-//api routes
-
-/*var gps = express.Router();
-
-gps.route('/gps')  
-  .get(GpsController.findAllGPS)
-  .post(GpsController.addGPSRegister);
-
-gps.route('/gps/:id')  
-  .get(GpsController.findGPSByID)
-  .put(GpsController.updateGPS)
-  .delete(GpsController.deleteGPS);
-
-app.use('/api', gps);  */
-app.use(router);
-
-//port of the server in http//:localhost:3000
-/*app.listen(3000, function() {  
-  console.log("Node server running on http://localhost:3000");
-});*/
+app.listen(3000);
+console.log("Listening to PORT 3000");
