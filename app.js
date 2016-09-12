@@ -1,34 +1,61 @@
-var express     =   require("express");
-var app         =   express();
-var bodyParser  =   require("body-parser");
-var winesOP     =   require("./models/wines");
-var router      =   express.Router();
+var express         = require("express"),
+    app             = express(),
+    bodyParser      = require("body-parser"),
+    methodOverride  = require("method-override"),
+    mongoose        = require('mongoose');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({"extended" : false}));
-
-router.get("/",function(req,res){
-    res.json({"error" : false,"message" : "Hello World"});
+// Connection to DB
+mongoose.connect('mongodb://localhost/rio', function(err, res) {
+  if(err) throw err;
+  console.log('Connected to Database');
 });
 
-//route() will allow you to use same path for different HTTP operation.
-//So if you have same URL but with different HTTP OP such as POST,GET etc
-//Then use route() to remove redundant code.
+// Middlewares
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(methodOverride());
 
-router.route("/wines")
-    .get(function(req,res){
-        var response = {};
-        winesOP.findOne({},function(err,data){
-            if(err) {
-                response = {"error" : true,"message" : "Error fetching data"};
-            } else {
-                response = {"error" : false,"message" : data};
-            }
-            res.json(response);
-        });
-    });
+// Import Models and controllers
+var gpsModels     = require('./models/gpsModel')(app, mongoose);
+var gpsController = require('./controllers/gpsController');
 
-app.use('/',router);
+// Example Route
+var router = express.Router();
+router.get('/', function(req, res) {
+  res.send("Hello world!");
+});
+app.use(router);
 
-app.listen(3000);
-console.log("Listening to PORT 3000");
+// API routes
+var gpsShema = express.Router();
+
+gpsShema.route('/gps')
+  .get(gpsController.findAllRioShema)
+//  .post(TVShowCtrl.addTVShow);
+
+gpsShema.route('/gps/one')
+  .get(gpsController.findOneRioShema)
+
+
+gpsShema.route('/gps/bus')
+  .get(gpsController.findAllBuses)
+
+
+gpsShema.route('/gps/bus/:id')
+  .get(gpsController.findBus)
+
+
+gpsShema.route('/gps/:id')
+  .get(gpsController.findById)
+  //.put(TVShowCtrl.updateTVShow)
+  //.delete(TVShowCtrl.deleteTVShow);
+
+gpsShema.route('gps/count')
+  .get(gpsController.count)
+
+app.use('/api', gpsShema);
+
+// Start server
+app.listen(3000, function() {
+  console.log("Node server running on http://localhost:3000");
+});

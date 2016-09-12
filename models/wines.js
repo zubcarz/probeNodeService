@@ -1,20 +1,49 @@
-var mongoose    =   require("mongoose");
-mongoose.connect('mongodb://localhost:27017/geo');
-
-// create instance of Schema
+var mongoose = require('mongoose');
 var mongoSchema =   mongoose.Schema;
-// create schema
-var winesShemas = new mongoSchema({  
-  properties:    { 
-    name : {type: String },
-    description : { type : String},
-    id : {type : String}
-  },
-  type:     { type: String },
-  geometry:  { 
-    coordinates : [],
-    type : {type : String}
-  },
-});
-// create model if not exists.
-module.exports = mongoose.model('wines', winesShemas);  
+
+exports = module.exports = function(app, mongoose) {
+
+	var tvshowSchema = new mongoSchema(
+
+{
+  "type": "object",
+  "properties": {
+    "bus_identifier": {
+      "type": "string"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "datetime": {
+      "type": "string"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {}
+        }
+      }
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "velocity": {
+      "type": "number"
+    },
+    "route_short_name": {
+      "type": "number"
+    }
+  }
+},{ collection : 'gps_route_552' }
+
+
+  );
+
+	mongoose.model('gps_route_552', tvshowSchema);
+
+};
